@@ -1,5 +1,9 @@
+import time
+
 from selenium import webdriver
 import unittest
+
+from selenium.webdriver.common.keys import Keys
 
 
 class NewVisitorTest(unittest.TestCase):
@@ -16,7 +20,22 @@ class NewVisitorTest(unittest.TestCase):
     def test_can_start_a_list_and_retrieve_it_later(self):
         """We can start list and receive it later"""
         self.browser.get("http://localhost:8000")
+
+        header_text = self.browser.find_element_by_tag_name("h1").text
         self.assertIn("To-Do", self.browser.title)
+
+        inputbox = self.browser.find_element_by_id("id_new_item")
+        self.assertEqual(inputbox.get_attribute("placeholder"), "Enter a to-do item")
+
+        inputbox.send_keys("Buy Mark Lutz book.")  # ввод данных в поля ввода input
+        inputbox.send_keys(Keys.ENTER)  # отправляем спец.клавишу  ENTER
+        time.sleep()  # выше обновляем страницу, это гарантирует, что она загрузится
+
+        table = self.browser.find_element_by_id("id_list_table")
+        rows = table.find_elements_by_tag_name("tr")
+        self.assertTrue(any(row.text == "1: Buy Mark Lutz book." for row in rows))
+
+
         self.fail("Finish test")  # икогда не срабатывает и генерирует переданное сообщение об ошибке
 
 
