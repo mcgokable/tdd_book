@@ -23,4 +23,6 @@ urlpatterns = [
 
 ]
 
-urlpatterns += [url("^$", views.home_page, name="home")]
+urlpatterns += [url("^$", views.home_page, name="home"),
+                url('^lists/one/$', views.view_list, name='view_list'),
+                ]

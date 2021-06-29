@@ -49,17 +49,17 @@ class HomePageTest(TestCase):
     def test_redirect_after_POST(self):
         response = self.client.post('/', data={'item_text': 'A new list item'})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['location'], '/')
+        self.assertEqual(response['location'], '/lists/one/')
 
-    def test_display_all_list_items(self):
-        """Проверяем отображение всех элементво списка"""
-        Item.objects.create(text='item 1')
-        Item.objects.create(text='item 2')
-
-        response = self.client.get('/')
-
-        self.assertIn('item 1', response.content.decode())
-        self.assertIn('item 2', response.content.decode())
+    # def test_display_all_list_items(self):
+    #     """Проверяем отображение всех элементво списка"""
+    #     Item.objects.create(text='item 1')
+    #     Item.objects.create(text='item 2')
+    #
+    #     response = self.client.get('/')
+    #
+    #     self.assertIn('item 1', response.content.decode())
+    #     self.assertIn('item 2', response.content.decode())
 
 
 class ItemModelTest(TestCase):
@@ -80,3 +80,21 @@ class ItemModelTest(TestCase):
         second_saved_item = saved_items[1]
         self.assertEqual(first_saved_item.text, 'The first list item')
         self.assertEqual(second_saved_item.text, 'Item the second')
+
+
+class ListViewTest(TestCase):
+    """Тест отображающий все элементы"""
+    def test_display_all_list_items(self):
+        """Проверяем отображение всех элементов списка"""
+        Item.objects.create(text='item 1')
+        Item.objects.create(text='item 2')
+
+        response = self.client.get('/lists/one/')
+
+        self.assertContains(response, 'item 1')  # вместо response.content.decode(). Contains знает как работать с байтами
+        self.assertContains(response, 'item 2')
+
+    def test_uses_list_template(self):
+        response = self.client.get('/lists/one/')
+
+        self.assertTemplateUsed(response, 'list.html')
