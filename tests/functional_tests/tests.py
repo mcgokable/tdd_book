@@ -1,10 +1,13 @@
 import time
-
+from django.test import LiveServerTestCase
 from selenium import webdriver
 import unittest
 
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.keys import Keys
 
+
+MAX_WAIT = 10
 
 class NewVisitorTest(unittest.TestCase):
     """Test for new visitor"""
@@ -17,11 +20,25 @@ class NewVisitorTest(unittest.TestCase):
         """cleaning"""
         self.browser.quit()
 
-    def check_for_row_in_list_table(self, row_text):
-        """подтверждение строки в таблице списка"""
-        table = self.browser.find_element_by_id('id_list_table')
-        rows = table.find_elements_by_tag_name('tr')
-        self.assertIn(row_text, [row.text for row in rows])
+    # def check_for_row_in_list_table(self, row_text):
+    #     """подтверждение строки в таблице списка"""
+    #     table = self.browser.find_element_by_id('id_list_table')
+    #     rows = table.find_elements_by_tag_name('tr')
+    #     self.assertIn(row_text, [row.text for row in rows])
+
+    def wait_for_row_in_list_table(self, row_text):
+        """ожидать строку в таблице списка"""
+        start_time = time.time()
+        while True:
+            try:
+                table = self.browser.find_element_by_id('id_list_table')
+                rows = table.find_elements_by_tag_name('tr')
+                self.assertIn(row_text, [row.text for row in rows])
+                return
+            except (AssertionError, WebDriverException) as err:
+                if time.time() - start_time > MAX_WAIT:
+                    raise err
+                time.sleep(0.5)
 
     def test_can_start_a_list_and_retrieve_it_later(self):
         """We can start list and receive it later"""
@@ -35,18 +52,18 @@ class NewVisitorTest(unittest.TestCase):
 
         inputbox.send_keys("Buy Mark Lutz book.")  # ввод данных в поля ввода input
         inputbox.send_keys(Keys.ENTER)  # отправляем спец.клавишу  ENTER
-        time.sleep(3)  # выше обновляем страницу, это гарантирует, что она загрузится
-        self.check_for_row_in_list_table('1: Buy Mark Lutz book.')
+        # time.sleep(3)  # выше обновляем страницу, это гарантирует, что она загрузится
+        self.wait_for_row_in_list_table('1: Buy Mark Lutz book.')
 
         inputbox = self.browser.find_element_by_id("id_new_item")
         inputbox.send_keys(
             "Buy Mark Lutz book tom 2.")  # ввод данных в поля ввода input
         inputbox.send_keys(Keys.ENTER)  # отправляем спец.клавишу  ENTER
-        time.sleep(
-            3)  # выше обновляем страницу, это гарантирует, что она загрузится
+        # time.sleep(
+        #     3)  # выше обновляем страницу, это гарантирует, что она загрузится
 
-        self.check_for_row_in_list_table('1: Buy Mark Lutz book.')
-        self.check_for_row_in_list_table('2: Buy Mark Lutz book tom 2.')
+        self.wait_for_row_in_list_table('1: Buy Mark Lutz book.')
+        self.wait_for_row_in_list_table('2: Buy Mark Lutz book tom 2.')
 
         # table = self.browser.find_element_by_id("id_list_table")
         # rows = table.find_elements_by_tag_name("tr")
@@ -57,5 +74,5 @@ class NewVisitorTest(unittest.TestCase):
         self.fail("Finish test")  # никогда не срабатывает и генерирует переданное сообщение об ошибке
 
 
-if __name__ == "__main__":
-    unittest.main(warnings="ignore")  # запускает исполнителя тестов, unittest , а он автоматически найдет в файле тест.классы, методы и выполнит их. warnings подавляет лишние предупреждающие сообщения Resourcewarning
+# if __name__ == "__main__":
+#     unittest.main(warnings="ignore")  # запускает исполнителя тестов, unittest , а он автоматически найдет в файле тест.классы, методы и выполнит их. warnings подавляет лишние предупреждающие сообщения Resourcewarning
