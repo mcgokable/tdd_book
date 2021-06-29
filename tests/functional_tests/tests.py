@@ -9,7 +9,7 @@ from selenium.webdriver.common.keys import Keys
 
 MAX_WAIT = 10
 
-class NewVisitorTest(unittest.TestCase):
+class NewVisitorTest(LiveServerTestCase):
     """Test for new visitor"""
 
     def setUp(self):
@@ -42,7 +42,7 @@ class NewVisitorTest(unittest.TestCase):
 
     def test_can_start_a_list_and_retrieve_it_later(self):
         """We can start list and receive it later"""
-        self.browser.get("http://localhost:8000")
+        self.browser.get(self.live_server_url) # это дает нам LiveServerTestCase
 
         header_text = self.browser.find_element_by_tag_name("h1").text
         self.assertIn("To-Do", self.browser.title)
@@ -71,7 +71,49 @@ class NewVisitorTest(unittest.TestCase):
         # self.assertIn('1: Buy Mark Lutz book.', [row.text for row in rows])
         # self.assertIn('2: Buy Mark Lutz book tom 2.', [row.text for row in rows])
 
-        self.fail("Finish test")  # никогда не срабатывает и генерирует переданное сообщение об ошибке
+        # self.fail("Finish test")  # никогда не срабатывает и генерирует переданное сообщение об ошибке
+
+    # def test_can_start_a_list_for_one_user(self):
+    #     """можно начать список для одного пользователя"""
+    #     self.wait_for_row_in_list_table('2: Buy Mark Lutz book tom 2.')
+    #     self.wait_for_row_in_list_table('1: Buy Mark Lutz book.')
+
+    def test_multiple_users_can_start_lists_at_different_urls(self):
+        """У разных пользователей - разные листы , по разным urls"""
+        self.browser.get(self.live_server_url)
+
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys('Buy Mark Lutz book.')
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table('1: Buy Mark Lutz book.')
+
+        first_list_url = self.browser.current_url
+        self.assertRegex(first_list_url, '/lists/.+')
+
+        ## используем новый сеанс браузера
+        # теперь проверяем, что приходит новый пользователь и он не видит первый список
+        self.browser.quit()
+        self.browser = webdriver.Firefox()
+
+        self.browser.get(self.live_server_url)
+        page_text = self.browser.find_element_by_tag_name('body').text
+        self.assertNotIn('Buy Mark Lutz book.', page_text)
+        self.assertNotIn('Buy Mark Lutz book tom 2.', page_text)
+
+        # новый пользователь ночинает свой список
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys('Buy milk')
+        inputbox.send_keys(Keys.ENTER)
+        self.wait_for_row_in_list_table('1: Buy milk')
+
+        second_list_url = self.browser.current_url
+        self.assertRegex(second_list_url, '/lists/.+')
+        self.assertNotEqual(second_list_url, first_list_url)
+
+        # нет элемментов первого списка, но есть свои
+        page_text = self.browser.find_element_by_tag_name('body').text
+        self.assertNotIn('Buy Mark Lutz book.', page_text)
+        self.assertIn('Buy milk', page_text)
 
 
 # if __name__ == "__main__":
