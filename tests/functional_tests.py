@@ -33,10 +33,11 @@ class NewVisitorTest(unittest.TestCase):
 
         table = self.browser.find_element_by_id("id_list_table")
         rows = table.find_elements_by_tag_name("tr")
-        self.assertTrue(any(row.text == "1: Buy Mark Lutz book." for row in rows), "Новый элемент списка не появился в таблице")
+        # self.assertTrue(any(row.text == "1: Buy Mark Lutz book." for row in rows), f"Новый элемент списка не появился в таблице. Содержимым было:\n{table.text}")
+        self.assertIn('1: Buy Mark Lutz book.', [row.text for row in rows])
+        self.assertIn('2: Buy Mark Lutz book tom 2.', [row.text for row in rows])
 
-
-        self.fail("Finish test")  # икогда не срабатывает и генерирует переданное сообщение об ошибке
+        self.fail("Finish test")  # никогда не срабатывает и генерирует переданное сообщение об ошибке
 
 
 if __name__ == "__main__":

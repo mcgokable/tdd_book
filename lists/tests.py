@@ -1,7 +1,7 @@
 from django.http import HttpRequest
 from django.test import TestCase
 from django.urls import resolve  # джанго использует для преобразования url-адреса и нахождения функций представления, в соответствии которым они должны быть поставлены
-from .views import home_page
+
 from django.template.loader import render_to_string  # преобразование шаблона в HTML-разметку
 
 
@@ -28,4 +28,10 @@ class HomePageTest(TestCase):
         response = self.client.get("/")  # вместио создания HttpRequest и вызовы вьюхи
         html = response.content.decode("utf8")
 
+        self.assertTemplateUsed(response, "home.html")
+
+    def test_can_save_a_POST_request(self):
+        """we can save POST request"""
+        response = self.client.post("/", data={"item_text": "A new list item"})
+        self.assertIn("A new list item", response.content.decode())
         self.assertTemplateUsed(response, "home.html")
