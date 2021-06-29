@@ -35,7 +35,15 @@ class NewVisitorTest(unittest.TestCase):
 
         inputbox.send_keys("Buy Mark Lutz book.")  # ввод данных в поля ввода input
         inputbox.send_keys(Keys.ENTER)  # отправляем спец.клавишу  ENTER
-        time.sleep(1)  # выше обновляем страницу, это гарантирует, что она загрузится
+        time.sleep(3)  # выше обновляем страницу, это гарантирует, что она загрузится
+        self.check_for_row_in_list_table('1: Buy Mark Lutz book.')
+
+        inputbox = self.browser.find_element_by_id("id_new_item")
+        inputbox.send_keys(
+            "Buy Mark Lutz book tom 2.")  # ввод данных в поля ввода input
+        inputbox.send_keys(Keys.ENTER)  # отправляем спец.клавишу  ENTER
+        time.sleep(
+            3)  # выше обновляем страницу, это гарантирует, что она загрузится
 
         self.check_for_row_in_list_table('1: Buy Mark Lutz book.')
         self.check_for_row_in_list_table('2: Buy Mark Lutz book tom 2.')

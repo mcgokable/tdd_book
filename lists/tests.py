@@ -24,6 +24,10 @@ class HomePageTest(TestCase):
     #     html = response.content.decode("utf8")  # Извлекаем содержимое отклика(это необработанные байты), вызываем decode для конвертации в html
     #     expected_html = render_to_string("home.html")
     #     self.assertEqual(html, expected_html)
+    def test_only_saves_items_when_necessary(self):
+        """тест: сохраняет элементы, только когда нужно"""
+        self.client.get('/')
+        self.assertEqual(Item.objects.count(), 0)
 
     def test_home_page_returns_correct_html_with_django_cliend(self):
         response = self.client.get("/")  # вместио создания HttpRequest и вызовы вьюхи
@@ -38,9 +42,25 @@ class HomePageTest(TestCase):
         self.assertEqual(Item.objects.count(), 1)
         new_item = Item.objects.first()
         self.assertEqual(new_item.text, 'A new list item')
-        
-        self.assertIn("A new list item", response.content.decode())
-        self.assertTemplateUsed(response, "home.html")
+
+        # self.assertIn("A new list item", response.content.decode())
+        # self.assertTemplateUsed(response, "home.html")
+
+    def test_redirect_after_POST(self):
+        response = self.client.post('/', data={'item_text': 'A new list item'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['location'], '/')
+
+    def test_display_all_list_items(self):
+        """Проверяем отображение всех элементво списка"""
+        Item.objects.create(text='item 1')
+        Item.objects.create(text='item 2')
+
+        response = self.client.get('/')
+
+        self.assertIn('item 1', response.content.decode())
+        self.assertIn('item 2', response.content.decode())
+
 
 class ItemModelTest(TestCase):
     """ест модели элемента списка"""
