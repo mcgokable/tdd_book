@@ -25,4 +25,5 @@ urlpatterns = [
 
 urlpatterns += [url("^$", views.home_page, name="home"),
                 url('^lists/one/$', views.view_list, name='view_list'),
+                url('^lists/new/$', views.new_list, name='new_list'),
                 ]
