@@ -9,6 +9,7 @@ from selenium.webdriver.common.keys import Keys
 
 MAX_WAIT = 10
 
+
 class NewVisitorTest(LiveServerTestCase):
     """Test for new visitor"""
 
@@ -42,6 +43,7 @@ class NewVisitorTest(LiveServerTestCase):
 
     def test_can_start_a_list_and_retrieve_it_later(self):
         """We can start list and receive it later"""
+        print('live_server url', self.live_server_url)
         self.browser.get(self.live_server_url) # это дает нам LiveServerTestCase
 
         header_text = self.browser.find_element_by_tag_name("h1").text
