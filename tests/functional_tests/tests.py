@@ -1,3 +1,4 @@
+import os
 import time
 from django.test import LiveServerTestCase
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
@@ -18,6 +19,11 @@ class NewVisitorTest(StaticLiveServerTestCase):
     def setUp(self):
         """setup"""
         self.browser = webdriver.Firefox()
+        staging_server = os.environ.get('STAGING_SERVER')  # для тестирования на промежуточном сервере
+        # указывать при запуске тестов: STAGING_SERVER=superlists-staging.ottg.eu python manage.py test tests
+        print('staging_server', staging_server)
+        if staging_server:
+            self.live_server_url = 'http://' + staging_server
 
     def tearDown(self) -> None:
         """cleaning"""
@@ -30,6 +36,7 @@ class NewVisitorTest(StaticLiveServerTestCase):
     #     self.assertIn(row_text, [row.text for row in rows])
 
     def wait_for_row_in_list_table(self, row_text):
+        # используем вместо check_for_row_in_list_table
         """ожидать строку в таблице списка"""
         start_time = time.time()
         while True:
@@ -46,7 +53,7 @@ class NewVisitorTest(StaticLiveServerTestCase):
     def test_can_start_a_list_and_retrieve_it_later(self):
         """We can start list and receive it later"""
         print('live_server url', self.live_server_url)
-        self.browser.get(self.live_server_url) # это дает нам LiveServerTestCase
+        self.browser.get(self.live_server_url)  # это дает нам LiveServerTestCase
 
         header_text = self.browser.find_element_by_tag_name("h1").text
         self.assertIn("To-Do", self.browser.title)
@@ -94,8 +101,8 @@ class NewVisitorTest(StaticLiveServerTestCase):
         first_list_url = self.browser.current_url
         self.assertRegex(first_list_url, '/lists/.+')
 
-        ## используем новый сеанс браузера
-        # теперь проверяем, что приходит новый пользователь и он не видит первый список
+        ## используем новый сеанс браузера, чтобы старая информация не прошла через cookies и др.
+        ## теперь проверяем, что приходит новый пользователь и он не видит первый список
         self.browser.quit()
         self.browser = webdriver.Firefox()
 
@@ -104,7 +111,7 @@ class NewVisitorTest(StaticLiveServerTestCase):
         self.assertNotIn('Buy Mark Lutz book.', page_text)
         self.assertNotIn('Buy Mark Lutz book tom 2.', page_text)
 
-        # новый пользователь ночинает свой список
+        # новый пользователь начинает свой список
         inputbox = self.browser.find_element_by_id('id_new_item')
         inputbox.send_keys('Buy milk')
         inputbox.send_keys(Keys.ENTER)
@@ -128,17 +135,19 @@ class NewVisitorTest(StaticLiveServerTestCase):
         # Она замечает, что поле ввода аккуратно центрировано
         inputbox = self.browser.find_element_by_id('id_new_item')
         print('location 1 ===>>> ', inputbox.location)
-        # self.assertAlmostEqual(inputbox.location['x'] + inputbox.size['width'] / 2, 512, delta=10)
-        self.assertAlmostEqual(inputbox.location['x'] + inputbox.size['width'] / 2, 272, delta=10)  # подонал тест под себя, разобраться
+        self.assertAlmostEqual(inputbox.location['x'] + inputbox.size['width'] / 2, 512, delta=10)
+        #self.assertAlmostEqual(inputbox.location['x'] + inputbox.size['width'] / 2, 272, delta=10)  # подонал тест под себя, разобраться
 
         # Она начинает новый список и видит, что поле ввода тоже центрировано
         inputbox.send_keys('testing')
         inputbox.send_keys(Keys.ENTER)
         self.wait_for_row_in_list_table('1: testing')
         inputbox = self.browser.find_element_by_id('id_new_item')
-        print('location 2 ===>>> ', inputbox.location)
-        # self.assertAlmostEqual(inputbox.location['x'] + inputbox.size['width'] / 2, 512, delta=10)
-        self.assertAlmostEqual(inputbox.location['x'] + inputbox.size['width'] / 2, 272, delta=10)  # подогнал под себя, разобраться
+        print('location 2 ===>>> ', inputbox.location['x'], 'size ===> ', inputbox.size['width'])
+        self.assertAlmostEqual(inputbox.location['x'] + inputbox.size['width'] / 2, 512, delta=10)
+        #self.assertAlmostEqual(inputbox.location['x'] + inputbox.size['width'] / 2, 272, delta=10)  # подогнал под себя, разобраться
 
 # if __name__ == "__main__":
-#     unittest.main(warnings="ignore")  # запускает исполнителя тестов, unittest , а он автоматически найдет в файле тест.классы, методы и выполнит их. warnings подавляет лишние предупреждающие сообщения Resourcewarning
+#     unittest.main(warnings="ignore")  # запускает исполнителя тестов, unittest
+#     , а он автоматически найдет в файле тест.классы, методы и выполнит их.
+#     warnings подавляет лишние предупреждающие сообщения Resourcewarning

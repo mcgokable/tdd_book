@@ -15,10 +15,13 @@ from django.template.loader import render_to_string  # преобразован�
 class HomePageTest(TestCase):
     """test home page"""
     # def test_root_url_resolves_to_home_page_view(self):
+    # """ проверяем чтобы resolve, когда ее вызывают с '/', то есть корнем сайта ,
+    # нашла функцию под названием home_page"""
     #     found = resolve("/")
     #     self.assertEqual(found.func, home_page)
 
     # def test_home_page_returns_correct_html(self):
+    # """Домашняя страница возвращает правильный html"""
     #     request = HttpRequest()  # создаем объект HttpRequest(то, что увидит Djangо, когда браузер пользователя запросит страницу
     #     response = home_page(request)
     #     html = response.content.decode("utf8")  # Извлекаем содержимое отклика(это необработанные байты), вызываем decode для конвертации в html
@@ -30,7 +33,8 @@ class HomePageTest(TestCase):
     #     self.assertEqual(Item.objects.count(), 0)
 
     def test_home_page_returns_correct_html_with_django_cliend(self):
-        response = self.client.get("/")  # вместио создания HttpRequest и вызовы вьюхи
+        """Проверяем, что используется правильный шаблон"""
+        response = self.client.get("/")   # вместо создания HttpRequest и вызовы вьюхи
         html = response.content.decode("utf8")
 
         self.assertTemplateUsed(response, "home.html")
@@ -94,6 +98,7 @@ class ListViewTest(TestCase):
         self.assertNotContains(response, 'other item 2')
 
     def test_uses_list_template(self):
+        """Использует шаблон списка"""
         list_ = List.objects.create()
         response = self.client.get(f'/lists/{list_.id}/')
 
